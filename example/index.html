@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <style>
+    :root {
+      --angle: 0deg;
+    }
+    html {
+      filter: invert(100%);
+    }
+    html,
+    body {
+      height: 100vh;
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    svg {
+      position: absolute;
+      transform: rotate(var(--angle, 0deg));
+      height: 90vmin;
+      width: 90vmin;
+    }
+  </style>
+  <body>
+    <svg
+      data-name="1-Arrow Up"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 32 32"
+    >
+      <path
+        d="m26.71 10.29-10-10a1 1 0 0 0-1.41 0l-10 10 1.41 1.41L15 3.41V32h2V3.41l8.29 8.29z"
+      />
+    </svg>
+    <script type="module">
+      import SwipeHandler from "./swipe-handler.js";
+
+      const sw = new SwipeHandler();
+
+      sw.on("swipe", (e) => {
+        setRotate(e.angle);
+      });
+
+      // set --angle on arrow
+      function setRotate(deg) {
+        // glad I deg
+        document.documentElement.style.setProperty("--angle", `${deg}deg`);
+      }
+    </script>
+  </body>
+</html>

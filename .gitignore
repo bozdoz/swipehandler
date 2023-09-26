@@ -1,0 +1,5 @@
+.eslintcache
+.vscode/
+node_modules/
+dist/
+example/swipe-handler.js
