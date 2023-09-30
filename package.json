@@ -1,6 +1,6 @@
 {
   "name": "swipehandler",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A handler for swipe events",
   "main": "dist/swipe-handler.js",
   "module": "dist/swipe-handler.mjs",
@@ -11,9 +11,10 @@
     "build": "npm-run-all -p build:*",
     "build:cjs": "npm run build-common -- --outfile=./dist/swipe-handler.js --format=cjs",
     "build:esm": "npm run build-common -- --outfile=./dist/swipe-handler.mjs --format=esm",
-    "build:example": "npm run build-common -- --outfile=./example/swipe-handler.js --format=esm",
+    "build:iife": "npm run build-common -- --outfile=./dist/swipe-handler.iife.js --format=iife --global-name=_sh --footer:js=\"var SwipeHandler = _sh.default;\"",
+    "build:example": "npm run build:iife -- --outfile=./example/swipe-handler.js",
     "build-common": "esbuild ./src/index.ts --bundle",
-    "build:declarations": "npx tsc --emitDeclarationOnly 1> /dev/null || true",
+    "build:declarations": "npx tsc --emitDeclarationOnly -noResolve 1> /dev/null || true",
     "format": "prettier --loglevel warn --write \"**/*.{js,css,md}\""
   },
   "files": [
