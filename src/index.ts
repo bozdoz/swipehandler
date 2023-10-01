@@ -3,8 +3,27 @@ import lineOfBestFit from "./lineOfBestFit";
 import Vec from "./vec";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Callback = (...args: any[]) => void;
-type Events = "swipe";
+type Callback = (data: Payload) => void;
+/** removes callback */
+type RemoveCb = () => void;
+
+type Direction = "up" | "right" | "down" | "left";
+
+/** https://en.wikipedia.org/wiki/Cardinal_direction */
+type Intercardinal = "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW";
+
+interface Payload {
+  angle: number;
+  dir: Direction;
+  intercardinal: Intercardinal;
+}
+
+interface Options {
+  /** min number of touch points to call it a swipe */
+  minPoints?: number;
+  /** stop counting points after this number of touches */
+  maxPoints?: number;
+}
 
 /**
  * SwipeHandler adds event listeners to a given target element
@@ -14,24 +33,36 @@ class SwipeHandler {
   /** event listener target */
   private target = document;
   /** min number of touch points to call it a swipe */
-  private minPoints = 4;
+  private minPoints = 3;
   /** stop counting points after this number of touches */
-  private maxPoints = 20;
+  private maxPoints = 12;
   /** record all points in a swipe */
   private points: Vec[] = [];
   /** don't fire move events unless pointer is down */
   private isPointerDown = false;
   /** internal event listeners and dispatchers */
-  private _events: Record<string, Record<string, Callback>> = {};
+  private _events: Callback[] = [];
 
-  public constructor(target = document) {
+  public constructor(
+    target = document,
+    { minPoints, maxPoints }: Options = {},
+  ) {
     this.target = target;
+
+    if (minPoints != null) {
+      this.minPoints = minPoints;
+    }
+
+    if (maxPoints != null) {
+      this.maxPoints = maxPoints;
+    }
+
     this.events("on");
   }
 
   public destroy() {
     this.events("off");
-    this._events = {};
+    this._events = [];
   }
 
   private events(onoff: "on" | "off") {
@@ -103,7 +134,7 @@ class SwipeHandler {
         }
       }
 
-      let dir;
+      let dir: Direction = "up";
 
       if (angle > 315 || angle < 45) {
         dir = "up";
@@ -115,8 +146,7 @@ class SwipeHandler {
         dir = "left";
       }
 
-      // https://en.wikipedia.org/wiki/Cardinal_direction
-      let intercardinal;
+      let intercardinal: Intercardinal = "N";
 
       if (angle > 337.5 || angle < 22.5) {
         intercardinal = "N";
@@ -137,7 +167,7 @@ class SwipeHandler {
       }
 
       // TODO: should swipe be throttled?
-      this.fire("swipe", { angle, dir, intercardinal });
+      this.handleSwipe({ angle, dir, intercardinal });
     }
   };
 
@@ -149,40 +179,22 @@ class SwipeHandler {
     }
   };
 
-  // CONSUMER EVENTS
-
-  private stamp = (() => {
-    let i = 0;
-    const key = Symbol("swipehandler");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (obj: any) => {
-      if (!(key in obj)) {
-        obj[key] = i++;
-      }
-      return obj[key];
-    };
-  })();
-
-  on(event: Events, cb: Callback) {
-    this._events[event] = this._events[event] || {};
-    this._events[event][this.stamp(cb)] = cb;
-  }
-
-  fire(event: Events, data = {}) {
-    const events = this._events[event] || {};
-
-    for (const key in events) {
-      if (Object.prototype.hasOwnProperty.call(events, key)) {
-        events[key](data);
-      }
+  private handleSwipe({ angle, dir, intercardinal }: Payload) {
+    for (const cb of this._events) {
+      cb({
+        angle,
+        dir,
+        intercardinal,
+      });
     }
   }
 
-  off(event: Events, cb: Callback) {
-    this._events[event] = this._events[event] || {};
-    const key = this.stamp(cb);
+  public onSwipe(cb: Callback): RemoveCb {
+    this._events.push(cb);
 
-    delete this._events[event][key];
+    return () => {
+      this._events = this._events.filter((v) => v !== cb);
+    };
   }
 }
 
