@@ -10,6 +10,8 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .ts --cache --fix",
     "typecheck": "tsc --noEmit",
+    "build-tsc": "tsc",
+    "build-esbuild": "npm-run-all -p build:cjs build:declarations",
     "build": "npm-run-all -p build:*",
     "build:cjs": "npm run build-common -- --outfile=./dist/swipe-handler.js --format=cjs",
     "build:esm": "npm run build-common -- --outfile=./dist/swipe-handler.mjs --format=esm",
